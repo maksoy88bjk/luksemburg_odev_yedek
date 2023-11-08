@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Emre Batarlar, Mehmet Aksoy, Sercan Akıl">
+
+<title>luxembourg_project_HW</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="lx_project_emre_files/libs/clipboard/clipboard.min.js"></script>
+<script src="lx_project_emre_files/libs/quarto-html/quarto.js"></script>
+<script src="lx_project_emre_files/libs/quarto-html/popper.min.js"></script>
+<script src="lx_project_emre_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="lx_project_emre_files/libs/quarto-html/anchor.min.js"></script>
+<link href="lx_project_emre_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="lx_project_emre_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="lx_project_emre_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="lx_project_emre_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="lx_project_emre_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">luxembourg_project_HW</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Emre Batarlar, Mehmet Aksoy, Sercan Akıl </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="luxembourg-data-project" class="level1">
+<h1>Luxembourg Data Project</h1>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>We are going to download data about house prices in Luxembourg.</p>
+<p>Our goal is to:</p>
+<ul>
+<li><p>Get data trapped inside an Excel file into a neat data frame;</p></li>
+<li><p>Convert nominal to real prices using a simple method;</p></li>
+<li><p>Make some tables and plots.</p></li>
+</ul>
+<p>The following figures below show provinces in Luxembourg and the location of Luxembourg along with all of Europe.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearthhires)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>europe <span class="ot">&lt;-</span> rnaturalearth<span class="sc">::</span><span class="fu">ne_countries</span>(<span class="at">continent =</span> <span class="st">'europe'</span>, <span class="at">returnclass =</span> <span class="st">"sf"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> europe, <span class="fu">aes</span>(<span class="at">fill =</span> mapcolor13), <span class="at">color =</span> <span class="st">"#F3F3F3"</span>) <span class="sc">+</span> <span class="fu">scale_fill_fermenter</span>(<span class="at">palette =</span> <span class="st">"RdPu"</span>) <span class="sc">+</span>  </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">35</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">35</span>, <span class="dv">65</span>)) <span class="sc">+</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Europe"</span>) <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> europe,  <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>label_x, <span class="at">y=</span>label_y, <span class="at">label=</span>adm0_a3), <span class="at">size=</span><span class="dv">3</span>,<span class="at">fontface=</span><span class="st">'bold'</span>)  <span class="sc">+</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"none"</span>) <span class="sc">+</span>   <span class="fu">labs</span>(<span class="at">x=</span><span class="st">""</span>,<span class="at">y=</span><span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="lx_project_emre_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>luxembourg<span class="ot">&lt;-</span> rnaturalearth<span class="sc">::</span><span class="fu">ne_states</span>(<span class="at">country  =</span> <span class="st">'Luxembourg'</span>, <span class="at">returnclass =</span> <span class="st">"sf"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> luxembourg, <span class="fu">aes</span>(<span class="at">fill =</span> name), <span class="at">color =</span> <span class="st">"darkgray"</span>) <span class="sc">+</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">brewer.pal</span>(<span class="dv">5</span>,<span class="st">"RdGy"</span>)) <span class="sc">+</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Luxembourg"</span>) <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> luxembourg,  <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>longitude, <span class="at">y=</span>latitude, <span class="at">label=</span>name), <span class="at">size=</span><span class="dv">3</span>,<span class="at">fontface=</span><span class="st">'bold'</span>)  <span class="sc">+</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"none"</span>) <span class="sc">+</span>   <span class="fu">labs</span>(<span class="at">x=</span><span class="st">""</span>,<span class="at">y=</span><span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="lx_project_emre_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The plot below shows the value of the House Price Index over time for Luxembourg and the European Union. The data for plotting was obtained from Eurostat.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="fu">gzcon</span>(<span class="fu">url</span>(<span class="st">"https://github.com/b-rodrigues/rap4all/raw/master/datasets/prc_hpi_a__custom_4705395_page_linear.csv.gz"</span>))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>txt <span class="ot">&lt;-</span> <span class="fu">readLines</span>(url)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">textConnection</span>(txt))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x=</span>TIME_PERIOD, <span class="at">y=</span>OBS_VALUE, <span class="at">color=</span> geo)) <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span>   </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggtitle</span>(<span class="st">"House Price Index over time for Luxembourg and the European Union"</span>) <span class="sc">+</span> </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">x=</span><span class="st">""</span>,<span class="at">y=</span><span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Source: Eurostat"</span>) <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="at">linewidth=</span><span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_color_manual</span>( <span class="at">values=</span><span class="fu">c</span>(<span class="at">EU=</span><span class="st">"firebrick"</span>, <span class="at">LU=</span><span class="st">"navyblue"</span>),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                    <span class="at">guide =</span> <span class="fu">guide_legend</span>(<span class="at">ncol =</span> <span class="dv">2</span>)) <span class="sc">+</span> </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span><span class="st">"top"</span>,<span class="at">legend.title =</span> <span class="fu">element_blank</span>() ) <span class="sc">+</span> </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">color=</span><span class="st">"#666666"</span>, <span class="at">face=</span><span class="st">"bold"</span>, <span class="at">size=</span><span class="dv">12</span>, <span class="at">hjust =</span> <span class="fl">0.05</span>, <span class="at">vjust=</span><span class="fl">2.12</span>)) <span class="sc">+</span> </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">10</span>, <span class="at">face=</span><span class="st">"bold"</span>),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">10</span>,<span class="at">angle=</span><span class="dv">45</span>, <span class="at">hjust=</span><span class="dv">1</span>, <span class="at">face=</span><span class="st">"bold"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="lx_project_emre_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="getting-data" class="level2">
+<h2 class="anchored" data-anchor-id="getting-data">Getting Data</h2>
+<p>It can be difficult to take data out of Excel and put it into a tidy data frame. Excel is frequently used as a tool for presenting data in a way that is more readable by humans than by machines. It is essential to understand this distinction since it could have avoided many of the problems that statisticians and researchers encounter. Check out this sample of an Excel file designed for human use below:</p>
+<p><img src="images/obs_hab_xlsx_overview.png" class="img-fluid"></p>
+<p>What then makes this file unreadable by machines? These are a few problems:</p>
+<ul>
+<li><p>The majority of importing tools anticipate the table to begin in the top-left corner of the spreadsheet, although this is not the case</p></li>
+<li><p>The spreadsheet begins with a header that has some text and an image in it</p></li>
+<li><p>Text numbers are separated by “,” to indicate thousands</p></li>
+<li><p>Each year is on a different sheet</p></li>
+</ul>
+<p>We will deal with these problems.</p>
+<p>Let’s import some packages:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'janitor'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    chisq.test, fisher.test</code></pre>
+</div>
+</div>
+<p>Numerous functions for data manipulation, such as group-wise aggregation, are available in the {dplyr} package.For functional programming {purrr} is a package for it. {stringr} is a package for manipulating strings.</p>
+<p>{readxl} reads in Excel workbooks and lastly, {janitor} offers several extremely useful functions to accomplish certain typical operations, like renaming every column of a data frame in snake case with ease.</p>
+<p>Below part is downloading the raw Excel file.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#the link for the data</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>url      <span class="ot">&lt;-</span> <span class="st">"https://is.gd/1vvBAc"</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".xslx"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(url , raw_data , <span class="at">method =</span> <span class="st">"auto"</span> , <span class="at">mode =</span> <span class="st">"wb"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="preparing-data" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-data">Preparing Data</h2>
+<p>Data is not ready to use we need clean it. The below code takes the excel file and saves the sheet names into a variable. Next, we read the required sheet into a data frame using a function called read_clean(), which accepts as arguments the path to the Excel file and the sheet names. Because each Excel sheet has a header on the first ten lines, we use skip = 10 to skip those lines. The year of the data is added to a new column called year as the final action taken by this function. The sheet names are fortunately the years: “2010,” “2011,” and so forth. The data from every sheet is then read into a single list of data frames as we map this function to the list of sheet names.Then, we bind each data frame by row into a single data frame using bind_rows().</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>sheets <span class="ot">&lt;-</span> <span class="fu">excel_sheets</span>(raw_data)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>read_clean <span class="ot">&lt;-</span> <span class="cf">function</span>(..., sheet){</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_excel</span>(..., <span class="at">sheet =</span> sheet) <span class="sc">|&gt;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">year =</span> sheet)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  sheets,</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span><span class="fu">read_clean</span>(raw_data,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">skip =</span> <span class="dv">10</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>              <span class="at">sheet =</span> .)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>New names:
+• `*` -&gt; `*...3`
+• `*` -&gt; `*...4`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>raw_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,343 × 9
+   commune    nombre_doffres prix_moyen_annonce_e…¹ prix_moyen_annonce_a…² year 
+   &lt;chr&gt;               &lt;dbl&gt; &lt;chr&gt;                  &lt;chr&gt;                  &lt;chr&gt;
+ 1 Bascharage            192 593698.31000000006     3603.57                2010 
+ 2 Beaufort              266 461160.29              2902.76                2010 
+ 3 Bech                   65 621760.22              3280.51                2010 
+ 4 Beckerich             176 444498.68              2867.88                2010 
+ 5 Berdorf               111 504040.85              3055.99                2010 
+ 6 Bertrange             264 795338.87              4266.46                2010 
+ 7 Bettembou…            304 555628.29              3343.22                2010 
+ 8 Bettendorf             94 495074.38              3235.26                2010 
+ 9 Betzdorf              119 625914.47              3343.05                2010 
+10 Bissen                 70 516465.57              3321.65                2010 
+# ℹ 1,333 more rows
+# ℹ abbreviated names: ¹​prix_moyen_annonce_en_courant,
+#   ²​prix_moyen_annonce_au_m2_en_courant
+# ℹ 4 more variables: bech &lt;chr&gt;, x12 &lt;dbl&gt;, x3 &lt;chr&gt;, x4 &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Lastly, we select only the columns that are necessary and rename the columns (converting their French names to English).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">locality =</span> commune,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_offers =</span> nombre_doffres,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">average_price_nominal_euros =</span> prix_moyen_annonce_en_courant,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">average_price_m2_nominal_euros =</span> prix_moyen_annonce_au_m2_en_courant,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">average_price_m2_nominal_euros =</span> prix_moyen_annonce_au_m2_en_courant</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">locality =</span> <span class="fu">str_trim</span>(locality)) <span class="sc">|&gt;</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, locality, n_offers, <span class="fu">starts_with</span>(<span class="st">"average"</span>))</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>raw_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,343 × 5
+   year  locality    n_offers average_price_nominal_euros average_price_m2_nom…¹
+   &lt;chr&gt; &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;                       &lt;chr&gt;                 
+ 1 2010  Bascharage       192 593698.31000000006          3603.57               
+ 2 2010  Beaufort         266 461160.29                   2902.76               
+ 3 2010  Bech              65 621760.22                   3280.51               
+ 4 2010  Beckerich        176 444498.68                   2867.88               
+ 5 2010  Berdorf          111 504040.85                   3055.99               
+ 6 2010  Bertrange        264 795338.87                   4266.46               
+ 7 2010  Bettembourg      304 555628.29                   3343.22               
+ 8 2010  Bettendorf        94 495074.38                   3235.26               
+ 9 2010  Betzdorf         119 625914.47                   3343.05               
+10 2010  Bissen            70 516465.57                   3321.65               
+# ℹ 1,333 more rows
+# ℹ abbreviated name: ¹​average_price_m2_nominal_euros</code></pre>
+</div>
+</div>
+<p>However, there is a problem: the average price nominal euros and average price m2 nominal euros columns, which should be of type numeric, are instead of type character. Another problem that you will eventually discover when you examine the data is that the communes’ names are inconsistent. Let’s examine this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="sc">|&gt;</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"Luxembourg"</span> , locality)) <span class="sc">|&gt;</span>  </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(locality)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  locality             n
+  &lt;chr&gt;            &lt;int&gt;
+1 Luxembourg           9
+2 Luxembourg-Ville     2</code></pre>
+</div>
+</div>
+<p>It is clear that there are two different spellings for the city of Luxembourg. The situation is the same in Pétange, another commune:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="sc">|&gt;</span> <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"P.tange"</span> , locality)) <span class="sc">|&gt;</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(locality)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  locality     n
+  &lt;chr&gt;    &lt;int&gt;
+1 Petange      9
+2 Pétange      2</code></pre>
+</div>
+</div>
+<p>Thus, it is spelled correctly with a “é” in some cases but incorrectly in others. Now let’s write some code to fix these two problems:</p>
+</section>
+</section>
+<section id="correctness-of-language" class="level1">
+<h1>Correctness of Language</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">locality =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"Luxembourg-Ville"</span>, locality),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Luxembourg"</span>,</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                      locality),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">locality =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"P.tange"</span>, locality),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"Pétange"</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                           locality)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">|&gt;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"average"</span>),</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>         as.numeric))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There were 2 warnings in `mutate()`.
+The first warning was:
+ℹ In argument: `across(starts_with("average"), as.numeric)`.
+Caused by warning:
+! Zorlamadan dolayı ortaya çıkan NAs
+ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(average_price_nominal_euros))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 290 × 5
+   year  locality         n_offers average_price_nomina…¹ average_price_m2_nom…²
+   &lt;chr&gt; &lt;chr&gt;               &lt;dbl&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;
+ 1 2010  Consthum               29                     NA                     NA
+ 2 2010  Esch-sur-Sûre           7                     NA                     NA
+ 3 2010  Heiderscheid           29                     NA                     NA
+ 4 2010  Hoscheid               26                     NA                     NA
+ 5 2010  Saeul                  14                     NA                     NA
+ 6 2010  &lt;NA&gt;                   NA                     NA                     NA
+ 7 2010  &lt;NA&gt;                   NA                     NA                     NA
+ 8 2010  Total d'offres      19278                     NA                     NA
+ 9 2010  &lt;NA&gt;                   NA                     NA                     NA
+10 2010  Source : Minist…       NA                     NA                     NA
+# ℹ 280 more rows
+# ℹ abbreviated names: ¹​average_price_nominal_euros,
+#   ²​average_price_m2_nominal_euros</code></pre>
+</div>
+</div>
+<section id="check-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="check-the-dataset">Check the dataset</h2>
+<p>Some rows should be removed, containing those with missing “localities”. Additionally, the row where locality is equal to “Total d’offrees”. By implementing these changes, data frame sets may be created, one with data on communes, and the other on national prices. It would help us to view filtered data frame.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"Source"</span>, locality))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>To visualize communes in our dataset, those codes are in the below have been carried out;</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>commune_level_data <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"nationale|offres"</span>, locality),</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>           <span class="sc">!</span><span class="fu">is.na</span>(locality))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>In order to make up national data, dataset has been created;</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>country_level <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"nationale"</span>, locality)) <span class="sc">|&gt;</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n_offers)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>offers_country <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"Total d.offres"</span>, locality)) <span class="sc">|&gt;</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, n_offers)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>country_level_data <span class="ot">&lt;-</span> <span class="fu">full_join</span>(country_level, offers_country) <span class="sc">|&gt;</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, locality, n_offers, <span class="fu">everything</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">locality =</span> <span class="st">"Grand-Duchy of Luxembourg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(year)`</code></pre>
+</div>
+</div>
+<p>The purpose of those codes make our job easier by cleaning data. Before starting to analysis, commune should be inside of the dataset. Saving and re-hosting the page always shoul be committed. Otherwise, it will cause some conflict if someone decides to update it. Mostly, Github can be used for similar studies.</p>
+<p><strong>Scraping and saving the list:</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>current_communes <span class="ot">&lt;-</span> <span class="st">"https://is.gd/lux_communes"</span> <span class="sc">|&gt;</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  rvest<span class="sc">::</span><span class="fu">read_html</span>() <span class="sc">|&gt;</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  rvest<span class="sc">::</span><span class="fu">html_table</span>() <span class="sc">|&gt;</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  purrr<span class="sc">::</span><span class="fu">pluck</span>(<span class="dv">2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">|&gt;</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(name_2 <span class="sc">!=</span> <span class="st">"Name"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">commune =</span> name_2) <span class="sc">|&gt;</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">commune =</span> stringr<span class="sc">::</span><span class="fu">str_remove</span>(commune, <span class="st">" .$"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Using {rwest}, we can scrape the table from the re-hosted wikipedia page. Then, purrr::pluck() can be used in order to keep the second table from website. Then, column names can turn into machine-friendly names by considering janitor:: clean_names(). Besides, dplyr can be used for some further cleaning and renaming</p>
+<p><strong>Assuming that we have all the communes in our data set:</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(<span class="fu">unique</span>(commune_level_data<span class="sc">$</span>locality),</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>        current_communes<span class="sc">$</span>commune)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "Bascharage"          "Boevange-sur-Attert" "Burmerange"         
+ [4] "Clémency"            "Consthum"            "Ermsdorf"           
+ [7] "Erpeldange"          "Eschweiler"          "Heiderscheid"       
+[10] "Heinerscheid"        "Hobscheid"           "Hoscheid"           
+[13] "Hosingen"            "Luxembourg"          "Medernach"          
+[16] "Mompach"             "Munshausen"          "Neunhausen"         
+[19] "Rosport"             "Septfontaines"       "Tuntange"           
+[22] "Wellenstein"         "Kaerjeng"           </code></pre>
+</div>
+</div>
+<p>There are many communes, which are not in “current_communes” because of spelling differences or because they have merged into new ones. To avoid the differences in future, we need to get a list of all existing communes from 2010 onwards, and harmonise spelling.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>former_communes <span class="ot">&lt;-</span> <span class="st">"https://is.gd/lux_former_communes"</span> <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  rvest<span class="sc">::</span><span class="fu">read_html</span>() <span class="sc">|&gt;</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  rvest<span class="sc">::</span><span class="fu">html_table</span>() <span class="sc">|&gt;</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  purrr<span class="sc">::</span><span class="fu">pluck</span>(<span class="dv">3</span>) <span class="sc">|&gt;</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">|&gt;</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year_dissolved <span class="sc">&gt;</span> <span class="dv">2009</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>former_communes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 3
+   name                year_dissolved reason                         
+   &lt;chr&gt;                        &lt;int&gt; &lt;chr&gt;                          
+ 1 Bascharage                    2011 merged to form Käerjeng        
+ 2 Boevange-sur-Attert           2018 merged to form Helperknapp     
+ 3 Burmerange                    2011 merged into Schengen           
+ 4 Clemency                      2011 merged to form Käerjeng        
+ 5 Consthum                      2011 merged to form Parc Hosingen   
+ 6 Ermsdorf                      2011 merged to form Vallée de l'Ernz
+ 7 Eschweiler                    2015 merged into Wiltz              
+ 8 Heiderscheid                  2011 merged into Esch-sur-Sûre      
+ 9 Heinerscheid                  2011 merged into Clervaux           
+10 Hobscheid                     2018 merged to form Habscht         
+11 Hoscheid                      2011 merged to form Parc Hosingen   
+12 Hosingen                      2011 merged to form Parc Hosingen   
+13 Mompach                       2018 merged to form Rosport-Mompach 
+14 Medernach                     2011 merged to form Vallée de l'Ernz
+15 Munshausen                    2011 merged into Clervaux           
+16 Neunhausen                    2011 merged into Esch-sur-Sûre      
+17 Rosport                       2018 merged to form Rosport-Mompach 
+18 Septfontaines                 2018 merged to form Habscht         
+19 Tuntange                      2018 merged to form Helperknapp     
+20 Wellenstein                   2011 merged into Schengen           </code></pre>
+</div>
+</div>
+<p>Many communes have merged to form a new one. We are now able to combine the lists of current and former communes, as well as harmonize the names of these communes, so that the list of current communes will be more accurate.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>communes <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">c</span>(former_communes<span class="sc">$</span>name,</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>                     current_communes<span class="sc">$</span>commune))</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># we need to rename some communes</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Different spelling of these communes between wikipedia and the data</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>communes[<span class="fu">which</span>(communes <span class="sc">==</span> <span class="st">"Clemency"</span>)] <span class="ot">&lt;-</span> <span class="st">"Clémency"</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>communes[<span class="fu">which</span>(communes <span class="sc">==</span> <span class="st">"Redange"</span>)] <span class="ot">&lt;-</span> <span class="st">"Redange-sur-Attert"</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>communes[<span class="fu">which</span>(communes <span class="sc">==</span> <span class="st">"Erpeldange-sur-Sûre"</span>)] <span class="ot">&lt;-</span> <span class="st">"Erpeldange"</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>communes[<span class="fu">which</span>(communes <span class="sc">==</span> <span class="st">"Luxembourg City"</span>)] <span class="ot">&lt;-</span> <span class="st">"Luxembourg"</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>communes[<span class="fu">which</span>(communes <span class="sc">==</span> <span class="st">"Käerjeng"</span>)] <span class="ot">&lt;-</span> <span class="st">"Kaerjeng"</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>communes[<span class="fu">which</span>(communes <span class="sc">==</span> <span class="st">"Petange"</span>)] <span class="ot">&lt;-</span> <span class="st">"Pétange"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here you can do retest.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(<span class="fu">unique</span>(commune_level_data<span class="sc">$</span>locality),</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>        communes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>character(0)</code></pre>
+</div>
+</div>
+<p>When we compare the data with every commune that existed since 2010, we do not have any commune that is unaccounted for. We can now start with analysing the data.</p>
+</section>
+</section>
+<section id="analyzing-the-data" class="level1">
+<h1>Analyzing the data</h1>
+<p>To analyse the data, we need to count for a Laspeyeres price index that measures how much the price is more expensive or cheaper relative to the base year in 2010.</p>
+<p>A simple analysis of five communes will be performed using the R script. This analysis contains all the needed ingredients to illustrate everything else. After that, updating data or reusing the code can assist rerun the analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> commune_level_data, <span class="fu">aes</span>(<span class="at">x =</span> n_offers, <span class="at">y =</span> average_price_nominal_euros)) <span class="sc">+</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Scatter Plot of Number of Offers vs. Average Price"</span>,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of Offers"</span>, <span class="at">y =</span> <span class="st">"Average Price (Nominal Euros)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 129 rows containing missing values (`geom_point()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="lx_project_emre_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> commune_level_data, <span class="fu">aes</span>(<span class="at">x =</span> locality, <span class="at">y =</span> average_price_nominal_euros)) <span class="sc">+</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Price by Locality"</span>, <span class="at">x =</span> <span class="st">"Locality"</span>, <span class="at">y =</span> <span class="st">"Average Price (Nominal Euros)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 129 rows containing non-finite values (`stat_boxplot()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="lx_project_emre_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> commune_level_data, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> average_price_nominal_euros)) <span class="sc">+</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Price Over Time"</span>, <span class="at">x =</span> <span class="st">"Year"</span>, <span class="at">y =</span> <span class="st">"Average Price (Nominal Euros)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="lx_project_emre_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Assuming current_communes is a tibble and commune_level_data is a data frame</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert current_communes to a data frame if needed</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>current_communes <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(current_communes)</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the data based on locality and commune columns</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> commune_level_data <span class="sc">%&gt;%</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(current_communes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"locality"</span> <span class="ot">=</span> <span class="st">"commune"</span>)) </span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Rename the 'canton' column if you want</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(result)[<span class="fu">colnames</span>(result) <span class="sc">==</span> <span class="st">"canton.y"</span>] <span class="ot">&lt;-</span> <span class="st">"canton"</span></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a><span class="co"># The 'result' dataframe now has the 'canton' column</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,171 × 11
+   year  locality   n_offers average_price_nomina…¹ average_price_m2_nom…² name 
+   &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;                  &lt;dbl&gt;                  &lt;dbl&gt; &lt;chr&gt;
+ 1 2010  Bascharage      192                593698.                  3604. &lt;NA&gt; 
+ 2 2010  Beaufort        266                461160.                  2903. ""   
+ 3 2010  Bech             65                621760.                  3281. ""   
+ 4 2010  Beckerich       176                444499.                  2868. ""   
+ 5 2010  Berdorf         111                504041.                  3056. ""   
+ 6 2010  Bertrange       264                795339.                  4266. ""   
+ 7 2010  Bettembou…      304                555628.                  3343. ""   
+ 8 2010  Bettendorf       94                495074.                  3235. ""   
+ 9 2010  Betzdorf        119                625914.                  3343. ""   
+10 2010  Bissen           70                516466.                  3322. ""   
+# ℹ 1,161 more rows
+# ℹ abbreviated names: ¹​average_price_nominal_euros,
+#   ²​average_price_m2_nominal_euros
+# ℹ 5 more variables: canton &lt;chr&gt;, population_2018 &lt;chr&gt;, area &lt;chr&gt;,
+#   area_2 &lt;chr&gt;, population_density &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>The box-plot graphic below show the average and outlier values of the house price for each Canton in Luxembourg. The Canton of Luxembourg has the highest average price compared to the others, but the Canton of Capellen also has one of the highest outlier prices. Vianden, Wiltz and Clevaux have approximately the lowest prices with respect to the other Cantons. Moreover, according to box-plot analysis, average house prices in Luxembourg range between 500 and 750 thousand €.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(result)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> result, <span class="fu">aes</span>(<span class="at">x =</span> canton, <span class="at">y =</span> average_price_nominal_euros , <span class="at">fill =</span> canton )) <span class="sc">+</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Price by Canton"</span>, <span class="at">x =</span> <span class="st">"Canton"</span>, <span class="at">y =</span> <span class="st">"Average Prices (Nominal Euros)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="lx_project_emre_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

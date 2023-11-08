@@ -1,0 +1,380 @@
+---
+title: "luxembourg_project_HW"
+format: html
+editor: visual
+author: Emre Batarlar, Mehmet Aksoy, Sercan Akıl
+---
+
+# Luxembourg Data Project
+
+## Introduction
+
+We are going to download data about house prices in Luxembourg.
+
+Our goal is to:
+
+-   Get data trapped inside an Excel file into a neat data frame;
+
+-   Convert nominal to real prices using a simple method;
+
+-   Make some tables and plots.
+
+The following figures below show provinces in Luxembourg and the location of Luxembourg along with all of Europe.
+
+```{r}
+#| warning: false
+
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthhires)
+library(RColorBrewer)
+
+europe <- rnaturalearth::ne_countries(continent = 'europe', returnclass = "sf")
+
+ggplot() +
+  geom_sf(data = europe, aes(fill = mapcolor13), color = "#F3F3F3") + scale_fill_fermenter(palette = "RdPu") +  
+  coord_sf(xlim = c(-10, 35), ylim = c(35, 65)) +
+  ggtitle("Europe") + theme_minimal() + 
+  geom_text(data = europe,  mapping = aes(x=label_x, y=label_y, label=adm0_a3), size=3,fontface='bold')  +
+  theme(legend.position="none") +   labs(x="",y="")
+
+luxembourg<- rnaturalearth::ne_states(country  = 'Luxembourg', returnclass = "sf")
+ggplot() +
+  geom_sf(data = luxembourg, aes(fill = name), color = "darkgray") + 
+  scale_fill_manual(values = brewer.pal(5,"RdGy")) +
+  ggtitle("Luxembourg") + theme_minimal() + 
+  geom_text(data = luxembourg,  mapping = aes(x=longitude, y=latitude, label=name), size=3,fontface='bold')  +
+  theme(legend.position="none") +   labs(x="",y="")
+```
+
+The plot below shows the value of the House Price Index over time for Luxembourg and the European Union. The data for plotting was obtained from Eurostat. 
+
+```{r}
+#| warning: false
+library(ggplot2)
+
+url <- gzcon(url("https://github.com/b-rodrigues/rap4all/raw/master/datasets/prc_hpi_a__custom_4705395_page_linear.csv.gz"))
+txt <- readLines(url)
+data <- read.csv(textConnection(txt))
+
+ggplot(data, aes(x=TIME_PERIOD, y=OBS_VALUE, color= geo)) + theme_bw() +   
+ggtitle("House Price Index over time for Luxembourg and the European Union") + 
+labs(x="",y="", caption = "Source: Eurostat") +
+geom_line(linewidth=2) + 
+scale_color_manual( values=c(EU="firebrick", LU="navyblue"),
+                    guide = guide_legend(ncol = 2)) + 
+  theme(legend.position ="top",legend.title = element_blank() ) + 
+  theme(plot.title = element_text(color="#666666", face="bold", size=12, hjust = 0.05, vjust=2.12)) + 
+  theme(
+    axis.text.y = element_text(size=10, face="bold"),
+    axis.text.x = element_text(size=10,angle=45, hjust=1, face="bold"))
+
+```
+
+## Getting Data
+
+It can be difficult to take data out of Excel and put it into a tidy data frame. Excel is frequently used as a tool for presenting data in a way that is more readable by humans than by machines. It is essential to understand this distinction since it could have avoided many of the problems that statisticians and researchers encounter. Check out this sample of an Excel file designed for human use below:
+
+![](images/obs_hab_xlsx_overview.png)
+
+What then makes this file unreadable by machines? These are a few problems:
+
+-   The majority of importing tools anticipate the table to begin in the top-left corner of the spreadsheet, although this is not the case
+
+-   The spreadsheet begins with a header that has some text and an image in it
+
+-   Text numbers are separated by "," to indicate thousands
+
+-   Each year is on a different sheet
+
+We will deal with these problems.
+
+Let's import some packages:
+
+```{r}
+library(dplyr)
+library(purrr)
+library(readxl)
+library(stringr)
+library(janitor)
+```
+
+Numerous functions for data manipulation, such as group-wise aggregation, are available in the {dplyr} package.For functional programming {purrr} is a package for it. {stringr} is a package for manipulating strings.
+
+{readxl} reads in Excel workbooks and lastly, {janitor} offers several extremely useful functions to accomplish certain typical operations, like renaming every column of a data frame in snake case with ease.
+
+Below part is downloading the raw Excel file.
+
+```{r}
+
+#the link for the data
+
+url      <- "https://is.gd/1vvBAc"
+raw_data <- tempfile(fileext = ".xslx")
+download.file(url , raw_data , method = "auto" , mode = "wb")
+
+
+
+```
+
+## Preparing Data
+
+Data is not ready to use we need clean it. The below code takes the excel file and saves the sheet names into a variable. Next, we read the required sheet into a data frame using a function called read_clean(), which accepts as arguments the path to the Excel file and the sheet names. Because each Excel sheet has a header on the first ten lines, we use skip = 10 to skip those lines. The year of the data is added to a new column called year as the final action taken by this function. The sheet names are fortunately the years: "2010," "2011," and so forth. The data from every sheet is then read into a single list of data frames as we map this function to the list of sheet names.Then, we bind each data frame by row into a single data frame using bind_rows().
+
+```{r}
+
+sheets <- excel_sheets(raw_data)
+
+read_clean <- function(..., sheet){
+
+  read_excel(..., sheet = sheet) |>
+
+    mutate(year = sheet)
+
+}
+
+raw_data <- map(
+  sheets,
+  ~read_clean(raw_data,
+              skip = 10,
+              sheet = .)
+) |>
+  bind_rows() |> 
+  clean_names()
+
+raw_data
+```
+
+Lastly, we select only the columns that are necessary and rename the columns (converting their French names to English).
+
+```{r}
+
+raw_data <- raw_data |>
+
+  rename(
+
+    locality = commune,
+
+    n_offers = nombre_doffres,
+
+    average_price_nominal_euros = prix_moyen_annonce_en_courant,
+
+    average_price_m2_nominal_euros = prix_moyen_annonce_au_m2_en_courant,
+
+    average_price_m2_nominal_euros = prix_moyen_annonce_au_m2_en_courant
+
+  ) |>
+
+  mutate(locality = str_trim(locality)) |>
+
+  select(year, locality, n_offers, starts_with("average"))
+
+raw_data
+```
+
+However, there is a problem: the average price nominal euros and average price m2 nominal euros columns, which should be of type numeric, are instead of type character. Another problem that you will eventually discover when you examine the data is that the communes' names are inconsistent. Let's examine this:
+
+```{r}
+
+raw_data |> 
+  filter(grepl("Luxembourg" , locality)) |>  
+  count(locality)
+```
+
+It is clear that there are two different spellings for the city of Luxembourg. The situation is the same in Pétange, another commune:
+
+```{r}
+raw_data |> filter(grepl("P.tange" , locality)) |> 
+  count(locality)
+```
+
+Thus, it is spelled correctly with a "é" in some cases but incorrectly in others. Now let's write some code to fix these two problems:
+
+# Correctness of Language
+
+```{r}
+raw_data <- raw_data |>
+  mutate(
+    locality = ifelse(grepl("Luxembourg-Ville", locality),
+                      "Luxembourg",
+                      locality),
+         locality = ifelse(grepl("P.tange", locality),
+                           "Pétange",
+                           locality)
+         ) |>
+  mutate(across(starts_with("average"),
+         as.numeric))
+```
+
+```{r}
+raw_data |>
+  filter(is.na(average_price_nominal_euros))
+```
+
+## Check the dataset
+
+Some rows should be removed, containing those with missing "localities". Additionally, the row where locality is equal to "Total d'offrees". By implementing these changes, data frame sets may be created, one with data on communes, and the other on national prices. It would help us to view filtered data frame.
+
+```{r}
+raw_data <- raw_data |>
+  filter(!grepl("Source", locality))
+```
+
+**To visualize communes in our dataset, those codes are in the below have been carried out;**
+
+```{r}
+commune_level_data <- raw_data |>
+    filter(!grepl("nationale|offres", locality),
+           !is.na(locality))
+```
+
+**In order to make up national data, dataset has been created;**
+
+```{r}
+country_level <- raw_data |>
+  filter(grepl("nationale", locality)) |>
+  select(-n_offers)
+
+offers_country <- raw_data |>
+  filter(grepl("Total d.offres", locality)) |>
+  select(year, n_offers)
+
+country_level_data <- full_join(country_level, offers_country) |>
+  select(year, locality, n_offers, everything()) |>
+  mutate(locality = "Grand-Duchy of Luxembourg")
+```
+
+The purpose of those codes make our job easier by cleaning data. Before starting to analysis, commune should be inside of the dataset. Saving and re-hosting the page always shoul be committed. Otherwise, it will cause some conflict if someone decides to update it. Mostly, Github can be used for similar studies.
+
+**Scraping and saving the list:**
+
+```{r}
+current_communes <- "https://is.gd/lux_communes" |>
+  rvest::read_html() |>
+  rvest::html_table() |>
+  purrr::pluck(2) |>
+  janitor::clean_names() |>
+  dplyr::filter(name_2 != "Name") |>
+  dplyr::rename(commune = name_2) |>
+  dplyr::mutate(commune = stringr::str_remove(commune, " .$"))
+
+```
+
+Using {rwest}, we can scrape the table from the re-hosted wikipedia page. Then, purrr::pluck() can be used in order to keep the second table from website. Then, column names can turn into machine-friendly names by considering janitor:: clean_names(). Besides, dplyr can be used for some further cleaning and renaming
+
+**Assuming that we have all the communes in our data set:**
+
+```{r}
+setdiff(unique(commune_level_data$locality),
+        current_communes$commune)
+```
+
+There are many communes, which are not in "current_communes" because of spelling differences or because they have merged into new ones. To avoid the differences in future, we need to get a list of all existing communes from 2010 onwards, and harmonise spelling.
+
+```{r}
+former_communes <- "https://is.gd/lux_former_communes" |>
+  rvest::read_html() |>
+  rvest::html_table() |>
+  purrr::pluck(3) |>
+  janitor::clean_names() |>
+  dplyr::filter(year_dissolved > 2009)
+
+former_communes
+```
+
+Many communes have merged to form a new one. We are now able to combine the lists of current and former communes, as well as harmonize the names of these communes, so that the list of current communes will be more accurate.
+
+```{r}
+communes <- unique(c(former_communes$name,
+                     current_communes$commune))
+# we need to rename some communes
+
+# Different spelling of these communes between wikipedia and the data
+
+communes[which(communes == "Clemency")] <- "Clémency"
+communes[which(communes == "Redange")] <- "Redange-sur-Attert"
+communes[which(communes == "Erpeldange-sur-Sûre")] <- "Erpeldange"
+communes[which(communes == "Luxembourg City")] <- "Luxembourg"
+communes[which(communes == "Käerjeng")] <- "Kaerjeng"
+communes[which(communes == "Petange")] <- "Pétange"
+
+
+```
+
+Here you can do retest.
+
+```{r}
+setdiff(unique(commune_level_data$locality),
+        communes)
+```
+
+When we compare the data with every commune that existed since 2010, we do not have any commune that is unaccounted for. We can now start with analysing the data.
+
+# Analyzing the data
+
+To analyse the data, we need to count for a Laspeyeres price index that measures how much the price is more expensive or cheaper relative to the base year in 2010.
+
+A simple analysis of five communes will be performed using the R script. This analysis contains all the needed ingredients to illustrate everything else. After that, updating data or reusing the code can assist rerun the analysis.
+
+```{r}
+library(ggplot2)
+ggplot(data = commune_level_data, aes(x = n_offers, y = average_price_nominal_euros)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Number of Offers vs. Average Price",
+       x = "Number of Offers", y = "Average Price (Nominal Euros)")
+
+```
+
+```{r}
+ggplot(data = commune_level_data, aes(x = locality, y = average_price_nominal_euros)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Average Price by Locality", x = "Locality", y = "Average Price (Nominal Euros)")
+
+
+```
+
+```{r}
+
+
+ggplot(data = commune_level_data, aes(x = year, y = average_price_nominal_euros)) +
+  geom_line() +
+  labs(title = "Average Price Over Time", x = "Year", y = "Average Price (Nominal Euros)")
+
+```
+
+```{r}
+
+
+# Assuming current_communes is a tibble and commune_level_data is a data frame
+# Convert current_communes to a data frame if needed
+current_communes <- as.data.frame(current_communes)
+
+
+# Merge the data based on locality and commune columns
+result <- commune_level_data %>%
+  left_join(current_communes, by = c("locality" = "commune")) 
+
+# Rename the 'canton' column if you want
+colnames(result)[colnames(result) == "canton.y"] <- "canton"
+
+# The 'result' dataframe now has the 'canton' column
+
+```
+
+```{r}
+result
+```
+
+The box-plot graphic below show the average and outlier values of the house price for each Canton in Luxembourg. The Canton of Luxembourg has the highest average price compared to the others, but the Canton of Capellen also has one of the highest outlier prices. Vianden, Wiltz and Clevaux have approximately the lowest prices with respect to the other Cantons. Moreover, according to box-plot analysis, average house prices in Luxembourg range between 500 and 750 thousand €.
+
+```{r}
+result <- na.omit(result)
+ggplot(data = result, aes(x = canton, y = average_price_nominal_euros , fill = canton )) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Average Price by Canton", x = "Canton", y = "Average Prices (Nominal Euros)")
+
+```
+
+
